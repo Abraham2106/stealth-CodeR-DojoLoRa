@@ -1,0 +1,43 @@
+{
+  "collection": {
+    "repositories": 32,
+    "prs": 266,
+    "expected_prs": 266,
+    "inline_comments": 368,
+    "bot_inline_comments": 368,
+    "human_inline_comments": 0,
+    "complete": true,
+    "training_executed": false
+  },
+  "collection_error_count": 0,
+  "preparation": null,
+  "model_profiles": {
+    "qwen35": {
+      "id": "Qwen/Qwen3.5-4B",
+      "loader": "Qwen3_5ForCausalLM",
+      "text_only": true,
+      "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+      "license": "Apache-2.0",
+      "quantization": "NF4-double-quant-fp16",
+      "status": "unmeasured"
+    },
+    "qwen3": {
+      "id": "Qwen/Qwen3-4B-Instruct-2507",
+      "loader": "AutoModelForCausalLM",
+      "text_only": true,
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+      "license": "Apache-2.0",
+      "quantization": "NF4-double-quant-fp16",
+      "status": "unmeasured"
+    }
+  },
+  "training_executed": false,
+  "deployment_4gb_verified": false,
+  "artifact_location": "Local data/raw and data/prepared; excluded from Git",
+  "license_distribution": {
+    "None": 9,
+    "MIT": 14,
+    "Apache-2.0": 1,
+    "NOASSERTION": 8
+  }
+}

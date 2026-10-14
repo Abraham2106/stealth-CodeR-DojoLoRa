@@ -1,0 +1,13 @@
+.venv/
+.cache/
+data/raw/
+data/prepared/
+data/snapshots/
+artifacts/
+checkpoints/
+reports/private/
+__pycache__/
+*.egg-info/
+.env
+__marimo__/
+*.sqlite*

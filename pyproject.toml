@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coder-dojolora"
+version = "0.1.0"
+description = "Auditable local PR review preparation; training disabled by default"
+requires-python = ">=3.12"
+dependencies = [
+  "marimo==0.25.1",
+  "tree-sitter==0.25.2",
+  "tree-sitter-python==0.25.0",
+  "tree-sitter-javascript==0.25.0",
+  "tree-sitter-typescript==0.23.2",
+]
+
+[project.optional-dependencies]
+model = [
+  "torch==2.11.0", "transformers==5.19.0", "peft==0.21.2",
+  "accelerate==1.15.0", "bitsandbytes==0.50.2", "safetensors==0.8.0",
+  "huggingface-hub==2.2.0",
+]
+evaluation = ["scikit-learn==1.9.1", "matplotlib==3.10.8"]
+
+[project.scripts]
+review_pr = "coder.cli:main"
+coder_data = "coder.data:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
