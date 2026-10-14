@@ -100,6 +100,32 @@ no contiene ningún control que entrene. Cada adquisición o construcción costo
 tiene un botón explícito separado de tablas y figuras. Molab es público por defecto
 y los archivos generados no necesariamente persisten; exportar antes de terminar.
 
-La elección final y medición en RTX 2050 de 4 GB, la política CPU/GPU, el presupuesto
-de entrenamiento y los resultados de modelos quedan pendientes. Un pico medido
-en RTX 6000 no demuestra compatibilidad con 4 GB.
+La elección final y medición en RTX 2050 de 4 GB y la política CPU/GPU quedan
+pendientes. Un pico medido en RTX 6000 no demuestra compatibilidad con 4 GB.
+
+## Corrida autorizada de A
+
+[Notebook de entrenamiento A](https://molab.marimo.io/github/Abraham2106/stealth-CodeR-DojoLoRa/blob/main/notebooks/train_a_molab.py).
+La corrida solicitada permite 6 horas totales de GPU, 2.000 updates incluyendo
+el smoke, o 3 épocas, con gasto externo $0. Solo se entrena A sobre reviews de
+bots; B y su cabeza permanecen pendientes de anotación humana. El notebook de
+preparación anterior mantiene su bloqueo.
+
+Subir `artifacts/coder-corpus.zip`, con los tres splits congelados y el informe
+de auditoría, y preparar el entorno CUDA mediante su botón. El entrenamiento
+comienza únicamente con su botón explícito. La unidad de SFT es un hunk cambiado;
+las coordenadas del comentario son targets, no campos de entrada. Se enmascara
+el prompt, se conserva intacta la respuesta y se registran exclusiones por
+longitud. El corpus positivo no enseña cuándo abstenerse de comentar.
+
+```sh
+python -m coder.train_a --data data/prepared --output artifacts/run-A \
+  --gpu-started-at TIMESTAMP_UNIX_DE_INICIO_DE_GPU --profile qwen35
+```
+
+Se compara NLL de tokens de respuesta con el backbone sin adaptadores usando
+el mismo test, seleccionando por validación. Una instancia nueva verifica la
+recarga y ejecuta generación cuantizada, registrando JSON válido, VRAM y latencia.
+Estas métricas no prueban corrección técnica. El checkpoint marca A entrenado y
+B sin entrenar; la CLI del revisor completo exige ambos y sigue bloqueada.
+Los resultados y pesos solo existen después de una ejecución observada.

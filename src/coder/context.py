@@ -6,7 +6,7 @@ import sqlite3
 from functools import lru_cache
 from pathlib import Path
 
-from .common import commit, digest, git
+from .common import commit, digest, git, git_blobs
 
 EXTENSIONS = {".py": "python", ".js": "javascript", ".jsx": "javascript",
               ".mjs": "javascript", ".cjs": "javascript", ".ts": "typescript", ".tsx": "tsx"}
@@ -79,6 +79,13 @@ class Graph:
           CREATE TABLE IF NOT EXISTS refs(path TEXT, scope TEXT, name TEXT, line INTEGER);
           CREATE TABLE IF NOT EXISTS dependencies(path TEXT, module TEXT, target_path TEXT, aliases TEXT);
           CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY, value TEXT);
+          CREATE INDEX IF NOT EXISTS symbols_by_name ON symbols(path,name);
+          CREATE INDEX IF NOT EXISTS symbols_by_qualified ON symbols(path,qualified);
+          CREATE INDEX IF NOT EXISTS calls_by_path ON calls(path);
+          CREATE INDEX IF NOT EXISTS calls_by_destination ON calls(resolved_path);
+          CREATE INDEX IF NOT EXISTS imports_by_path ON imports(path);
+          CREATE INDEX IF NOT EXISTS refs_by_path ON refs(path);
+          CREATE INDEX IF NOT EXISTS dependencies_by_path ON dependencies(path);
         """)
         with self.db:
             self._resolve_edges()
@@ -108,6 +115,7 @@ class Graph:
             self._resolve_edges()
             self.db.execute("INSERT OR REPLACE INTO metadata VALUES('revision',?)", (revision,))
             self.db.execute("INSERT OR REPLACE INTO metadata VALUES('parser_version','0.25.2')")
+            self.db.execute("INSERT OR REPLACE INTO metadata VALUES('snapshot_policy','exclude-vendor-v1')")
         return {"files": len(sources), "changed": changed,
                 "supported_files": self.db.execute("SELECT count(*) FROM files WHERE language IS NOT NULL").fetchone()[0],
                 "parse_errors": self.db.execute("SELECT count(*) FROM files WHERE parse_error=1").fetchone()[0],
@@ -214,11 +222,16 @@ def snapshot(repo, revision, max_files=5000, max_bytes=1024 * 1024, sources_requ
     entries = git(repo, "ls-tree", "-r", "-z", "--long", revision, binary=True).split(b"\0")
     sources, excluded = {}, []
     standards = {}
+    selected = []
+    source_count = 0
     for entry in entries:
         if not entry:
             continue
         metadata, raw_path = entry.split(b"\t", 1)
         path = raw_path.decode("utf-8", errors="replace")
+        if set(Path(path).parts).intersection({"node_modules", ".venv", "vendor", "site-packages", "__pycache__", "dist", "build"}):
+            excluded.append({"path": path, "reason": "vendored-dependency-or-generated-output"})
+            continue
         mode, kind, oid, size = metadata.decode().split()
         if kind != "blob" or mode == "120000":
             excluded.append({"path": path, "reason": "non-regular-file"})
@@ -228,10 +241,14 @@ def snapshot(repo, revision, max_files=5000, max_bytes=1024 * 1024, sources_requ
         if not supported and not is_standard:
             excluded.append({"path": path, "reason": "unsupported-language-or-non-source"})
             continue
-        if int(size) > max_bytes or len(sources) >= max_files:
+        if int(size) > max_bytes or source_count >= max_files:
             excluded.append({"path": path, "reason": "snapshot-size-limit"})
             continue
-        content = git(repo, "cat-file", "blob", oid, binary=True) if sources_required or is_standard else b""
+        selected.append((path, oid, supported, is_standard))
+        source_count += supported
+    blobs = git_blobs(repo, [oid for _, oid, supported, is_standard in selected if (supported and sources_required) or is_standard])
+    for path, oid, supported, is_standard in selected:
+        content = blobs.get(oid, b"")
         if supported and sources_required:
             sources[path] = content
         if is_standard:

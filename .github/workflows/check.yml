@@ -20,4 +20,5 @@ jobs:
           python -m pip install -e . transformers==5.19.0 peft==0.21.2 safetensors==0.8.0
       - run: python -m unittest discover -s tests -v
       - run: marimo check notebooks/coder_molab.py
+      - run: marimo check notebooks/train_a_molab.py
       - run: python -m compileall -q src notebooks

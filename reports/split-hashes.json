@@ -1,0 +1,15 @@
+{
+  "hashes": {
+    "train": "a09c69f7503d1bc3c0e9b45e9f4729284570ebb5dadd9427801ed517ae43fe12",
+    "validation": "590bcfa11f77d3d9967e662f984b4148a7bc4df7e886cb6ee64351048a4b7335",
+    "test": "9dae31dc162cf1d3011d0f8a482075ac2859caf81bbbd71aef03520f9c0f8d59",
+    "embargo": "bf082f6affcafc05ad89e2cc2fd455bd8c0f633201f0aa849229765162f34787"
+  },
+  "raw_record_hash": "93c4f215182e5bf04f8f48449af8d9697d6ee989f338f82ea2194eeb52938be7",
+  "sizes": {
+    "train": 179,
+    "validation": 39,
+    "test": 55,
+    "embargo": 72
+  }
+}

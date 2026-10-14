@@ -278,7 +278,8 @@ def prepare(root="data", with_context=False):
                 graph = Graph(root / "prepared/graphs" / repo.split("/")[1] / f"{base}.sqlite")
                 existing_revision = graph.db.execute("SELECT value FROM metadata WHERE key='revision'").fetchone()
                 existing_parser = graph.db.execute("SELECT value FROM metadata WHERE key='parser_version'").fetchone()
-                reuse = existing_revision == (base,) and existing_parser == ("0.25.2",)
+                existing_policy = graph.db.execute("SELECT value FROM metadata WHERE key='snapshot_policy'").fetchone()
+                reuse = existing_revision == (base,) and existing_parser == ("0.25.2",) and existing_policy == ("exclude-vendor-v1",)
                 _, sources, standards, unsupported = snapshot(clone, base, sources_required=not reuse)
                 if reuse:
                     coverage = {"files": graph.db.execute("SELECT count(*) FROM files").fetchone()[0], "changed": 0,

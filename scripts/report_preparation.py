@@ -43,6 +43,8 @@ def main():
     figure.tight_layout(rect=(0, .08, 1, 1))
     for extension in ("png", "pdf", "svg"):
         figure.savefig(destination / f"corpus.{extension}", dpi=300)
+    svg = destination / "corpus.svg"
+    svg.write_text("\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n", encoding="utf-8")
     plt.close(figure)
     write_json(destination / "corpus-plot-data.json", {"categories": ["bots", "humans"], "counts": values,
                                                        "denominator": collection["inline_comments"]})

@@ -28,6 +28,30 @@ def git(repo, *args, binary=False):
     return result.stdout if binary else result.stdout.decode("utf-8", errors="replace").strip()
 
 
+def git_blobs(repo, identities):
+    """Read immutable blobs in bounded batches rather than launching Git per file."""
+    identities = list(dict.fromkeys(identities))
+    output = {}
+    for start in range(0, len(identities), 64):
+        requested = identities[start:start + 64]
+        result = subprocess.run(["git", "-C", str(repo), "cat-file", "--batch"],
+                                input=("\n".join(requested) + "\n").encode(),
+                                capture_output=True, check=True, timeout=60)
+        offset = 0
+        for identity in requested:
+            end = result.stdout.index(b"\n", offset)
+            header = result.stdout[offset:end].decode().split()
+            if len(header) != 3 or header[0] != identity or header[1] != "blob":
+                raise ValueError("Unexpected Git batch blob response")
+            size = int(header[2])
+            offset = end + 1
+            output[identity] = result.stdout[offset:offset + size]
+            if len(output[identity]) != size:
+                raise ValueError("Truncated Git batch blob")
+            offset += size + 1
+    return output
+
+
 def commit(repo, ref):
     # Resolve to an immutable commit; never interpolate refs in a shell command.
     if not ref or ref.startswith("-"):
