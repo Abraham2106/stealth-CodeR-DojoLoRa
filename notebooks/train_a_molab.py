@@ -84,6 +84,13 @@ def _(Path, bootstrap_button, gpu_observed, mo, subprocess, sys):
         _package = f"coder-dojolora[model,evaluation] @ git+https://github.com/Abraham2106/stealth-CodeR-DojoLoRa.git@{executed_revision}"
         subprocess.run([trainer_python, "-m", "pip", "install", _package],
                        stdout=_log, stderr=subprocess.STDOUT, check=True, timeout=1800)
+        # Same package version with a different Git revision needs an explicit reinstall.
+        subprocess.run([trainer_python, "-m", "pip", "install", "--force-reinstall", "--no-deps", _package],
+                       stdout=_log, stderr=subprocess.STDOUT, check=True, timeout=1800)
+    _version_check = "import importlib.metadata,json; d=importlib.metadata.distribution('coder-dojolora'); print(json.loads(d.read_text('direct_url.json'))['vcs_info']['commit_id'])"
+    _installed_revision = subprocess.run([trainer_python, "-c", _version_check], check=True, capture_output=True, text=True).stdout.strip()
+    if _installed_revision != executed_revision:
+        raise RuntimeError("Installed code revision differs from requested revision")
     _preflight_code = "import json; from coder.evaluation import preflight; print(json.dumps(preflight(), indent=2))"
     runtime_preflight = subprocess.run([trainer_python, "-c", _preflight_code], check=True, capture_output=True, text=True).stdout
     print(runtime_preflight)
@@ -127,7 +134,15 @@ def _(Path, dataset_directory, executed_revision, gpu_started_at, json, mo, subp
         raise TimeoutError("Presupuesto GPU agotado")
     _marker = Path(".coder/training-started.json")
     if _marker.exists():
-        raise RuntimeError("Ya se inició una corrida en esta sesión; no se reinicia automáticamente")
+        _previous = json.loads(_marker.read_text())
+        _previous_directory = Path(_previous["output"])
+        _failure_path = _previous_directory / "failure.json"
+        if not _failure_path.exists() or (_previous_directory / "checkpoint").exists() or (_previous_directory / "smoke").exists():
+            raise RuntimeError("Una corrida previa puede tener pesos o seguir activa; no se reinicia automáticamente")
+        _failure = json.loads(_failure_path.read_text())
+        if _failure.get("type") != "TypeError" or "BatchEncoding" not in _failure.get("reason", ""):
+            raise RuntimeError("Este control solo permite reintentar el fallo de tokenización anterior a actualizaciones")
+        _marker.replace(_previous_directory / "notebook-launch.json")
     run_directory = Path(".coder") / ("run-A-" + time.strftime("%Y%m%d-%H%M%S", time.gmtime()))
     _marker.write_text(json.dumps({"output": str(run_directory), "code_revision": executed_revision,
                                    "gpu_started_at": gpu_started_at, "trained_adapters": ["A"]}))

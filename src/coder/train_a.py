@@ -5,6 +5,7 @@ import math
 import random
 import re
 import time
+from collections.abc import Mapping
 from pathlib import Path
 
 from .common import digest, manifest, verify_manifest, write_json
@@ -50,6 +51,9 @@ def prepare_sample(example, tokenizer, max_sequence=4096, max_completion=1024):
     for level in range(4):
         prefix = tokenizer.apply_chat_template(prompt(context), tokenize=True, add_generation_prompt=True,
                                                enable_thinking=False, return_dict=False)
+        if isinstance(prefix, Mapping):
+            prefix = prefix["input_ids"]
+        prefix = list(prefix)
         if len(prefix) + len(completion) <= max_sequence:
             break
         if level == 0:
