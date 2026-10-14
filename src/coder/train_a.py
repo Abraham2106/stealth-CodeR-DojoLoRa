@@ -49,7 +49,7 @@ def prepare_sample(example, tokenizer, max_sequence=4096, max_completion=1024):
     changes = []
     for level in range(4):
         prefix = tokenizer.apply_chat_template(prompt(context), tokenize=True, add_generation_prompt=True,
-                                               enable_thinking=False)
+                                               enable_thinking=False, return_dict=False)
         if len(prefix) + len(completion) <= max_sequence:
             break
         if level == 0:

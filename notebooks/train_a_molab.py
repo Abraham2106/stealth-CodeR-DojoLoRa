@@ -142,6 +142,7 @@ def _(Path, dataset_directory, executed_revision, gpu_started_at, json, mo, subp
 @app.cell
 def _(Path, json, mo, refresh, run_directory, training_process):
     refresh
+    mo.stop("run_directory" not in globals(), mo.md("El monitor espera una corrida explícita."))
     _log_path = Path(".coder/training.log")
     _lines = _log_path.read_text(errors="replace").splitlines()[-18:] if _log_path.exists() else []
     _report_path = run_directory / "report.json"
