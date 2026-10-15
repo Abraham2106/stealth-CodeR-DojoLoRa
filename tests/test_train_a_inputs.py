@@ -26,6 +26,18 @@ class TrainingInputTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             focused_hunk("", "a.py", 1, "RIGHT")
 
+    def test_tokenizer_mapping_is_normalized_to_token_ids(self):
+        from collections import UserDict
+        class MappingTokenizer(TinyTokenizer):
+            def apply_chat_template(self, messages, **kwargs):
+                return UserDict(input_ids=[7, 8, 9])
+        example = {"group": "repo#1", "base_sha": "base", "head_sha": "head", "target": "Review",
+                   "input": {"diff": "diff --git a/a.py b/a.py\n@@ -1 +1 @@\n-a\n+b\n",
+                             "path": "a.py", "line": 1, "side": "RIGHT"}}
+        sample = prepare_sample(example, MappingTokenizer())
+        self.assertEqual(sample["prefix"], [7, 8, 9])
+        self.assertEqual(sample["labels"][:3], [-100, -100, -100])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,8 +1,11 @@
 # CodeR DojoLoRa
 
 Preparación reproducible de un revisor local de PRs: grafo + recuperación local +
-un backbone Qwen con dos LoRA y una cabeza multitarea. **No se ha entrenado un modelo.**
-El entrenamiento está bloqueado hasta revisar datos, licencias y presupuesto.
+un backbone Qwen con dos LoRA y una cabeza multitarea. **LoRA A está entrenada;
+B permanece pendiente de anotación humana.** La corrida inicial utilizó reviews
+de bots y no certifica corrección técnica ni despliegue en 4 GB.
+
+[Resultados y límites de la corrida A](reports/training-A/README.md).
 
 ## Instalar y preparar
 

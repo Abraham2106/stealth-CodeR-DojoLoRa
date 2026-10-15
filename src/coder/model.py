@@ -152,7 +152,8 @@ def prompt(context, task="review"):
 
 def tokenize(tokenizer, context, device, task="review", max_tokens=4096):
     encoded = tokenizer.apply_chat_template(prompt(context, task), tokenize=True,
-                                            add_generation_prompt=True, return_dict=True, return_tensors="pt")
+                                            add_generation_prompt=True, enable_thinking=False,
+                                            return_dict=True, return_tensors="pt")
     if encoded["input_ids"].shape[1] > max_tokens:
         raise ValueError("Context exceeds token budget; split diff hunks instead of silently truncating")
     return {k: v.to(device) for k, v in encoded.items()}

@@ -148,6 +148,9 @@ def train_a(data_directory, output_directory, gpu_started_at, profile="qwen35", 
                   "B_trained": False, "deployment_4gb_verified": False}
     from .evaluation import preflight
     provenance["runtime"] = preflight()
+    import importlib.metadata
+    direct_url = importlib.metadata.distribution("coder-dojolora").read_text("direct_url.json")
+    provenance["installed_code"] = json.loads(direct_url) if direct_url else None
     write_json(output / "provenance.json", provenance)
     write_json(output / "excluded-examples.json", exclusions)
     write_json(output / "training-input-manifest.json", {s: [{"group": e["group"], "length": len(e["ids"]), "changes": e["changes"]} for e in examples]
@@ -223,6 +226,7 @@ def train_a(data_directory, output_directory, gpu_started_at, profile="qwen35", 
                     torch.save({"optimizer": optimizer.state_dict(), "epoch": epoch, "position": position,
                                 "global_step": global_step, "torch_rng": torch.get_rng_state(),
                                 "cuda_rng": torch.cuda.get_rng_state_all(), "python_rng": random.getstate()}, output / "latest/resume.pt")
+                    write_json(output / "latest/artifact-manifest.json", manifest(output / "latest"))
                 if global_step >= max_steps - 1:
                     break
         validation = token_nll(reviewer, splits["validation"], gpu_started_at)

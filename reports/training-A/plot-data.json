@@ -1,0 +1,44 @@
+{
+  "baseline": {
+    "mean_token_nll": 2.1004110866277563,
+    "completion_tokens": 2396,
+    "examples": 14
+  },
+  "candidate": {
+    "mean_token_nll": 1.1671364622591731,
+    "completion_tokens": 2396,
+    "examples": 14
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "steps": 16,
+      "train_loss": 1.713858263902977,
+      "validation": {
+        "mean_token_nll": 1.0129257756559786,
+        "completion_tokens": 879,
+        "examples": 6
+      }
+    },
+    {
+      "epoch": 2,
+      "steps": 32,
+      "train_loss": 1.2343762849198012,
+      "validation": {
+        "mean_token_nll": 0.8017812544168466,
+        "completion_tokens": 879,
+        "examples": 6
+      }
+    },
+    {
+      "epoch": 3,
+      "steps": 48,
+      "train_loss": 0.9548662842297163,
+      "validation": {
+        "mean_token_nll": 0.7505129345854802,
+        "completion_tokens": 879,
+        "examples": 6
+      }
+    }
+  ]
+}
